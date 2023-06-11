@@ -3,8 +3,8 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<groupId>com.github.pohtml</groupId>
-		<artifactId>http.jar</artifactId>
+		<groupId>com.github.pohtml.http.jar</groupId>
+		<artifactId>aggregator</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
 	<artifactId>classes</artifactId>
@@ -16,7 +16,7 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.github.pohtml</groupId>
+			<groupId>com.github.pohtml.http.jar</groupId>
 			<artifactId>annotations</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
