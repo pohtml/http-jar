@@ -27,7 +27,7 @@
 						<configuration>
 							<compilerArgument>-proc:none</compilerArgument>
 							<includes>
-								<include>com/softalks/pohtml/annotations/AnnotationProcessor.java</include>
+								<include>com/github/pohtml/annotations/AnnotationProcessor.java</include>
 							</includes>
 						</configuration>
 					</execution>
