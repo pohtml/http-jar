@@ -5,8 +5,10 @@ import static javax.tools.Diagnostic.Kind.ERROR;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 
 import javax.annotation.processing.AbstractProcessor;
@@ -23,6 +25,10 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.JavaFileObject;
+
+import org.apache.velocity.Template;
+import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.VelocityEngine;
 
 @SupportedAnnotationTypes("com.softalks.pohtml.annotations.Resource")
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
@@ -53,9 +59,9 @@ public class AnnotationProcessor extends AbstractProcessor {
 
 	private void file(Element element, String method) throws IOException {
 		Resource resource = element.getAnnotation(Resource.class);
-		String servlet = resource.servlet();
+		String servlet = resource.uri();
 		if (servlet.isEmpty()) {
-			servlet = resource.servlet();
+			servlet = resource.uri();
 			if (servlet.isEmpty()) {
 				messager.printMessage(ERROR,
 						"You must specifiy the context relative URI using the servlet attribute or the default (value) attribute",
@@ -89,18 +95,26 @@ public class AnnotationProcessor extends AbstractProcessor {
 			JavaFileObject context = filer.createSourceFile("com.github.pohtml.Context");
 			StringBuilder out = new StringBuilder();
 			long now = System.currentTimeMillis();
-			try (PrintWriter pw = new PrintWriter(context.openWriter())) {
-				out.append(PACKAGE).append("com.github.pohtml");
-				out.append(WEB_SERVLET).append(String.valueOf(now)).append("\"");
-				out.append(CLASS).append("Context");
-				out.append(EXTENDS).append("AbstractContext");
-				out.append(" {private static final long serialVersionUID = " + now + " L;}");
-				pw.append(out.toString());
-			}
-			try (PrintWriter pw = new PrintWriter(context.openWriter())) {
-				pw.print(
-						"package com.github.pohtml;public class Context {public static final long VERSION = System.currentTimeMillis();}");
-			}
+            Properties props = new Properties();
+            URL url = this.getClass().getClassLoader().getResource("velocity.properties");
+            props.load(url.openStream());
+            VelocityEngine ve = new VelocityEngine(props);
+            ve.init();
+            VelocityContext vc = new VelocityContext();
+            Template vt = ve.getTemplate("beaninfo.vm");
+            vt.merge(vc, context.openWriter());
+//			try (PrintWriter pw = new PrintWriter(context.openWriter())) {
+//				out.append(PACKAGE).append("com.github.pohtml");
+//				out.append(WEB_SERVLET).append(String.valueOf(now)).append("\"");
+//				out.append(CLASS).append("Context");
+//				out.append(EXTENDS).append("AbstractContext");
+//				out.append(" {private static final long serialVersionUID = " + now + " L;}");
+//				pw.append(out.toString());
+//			}
+//			try (PrintWriter pw = new PrintWriter(context.openWriter())) {
+//				pw.print(
+//						"package com.github.pohtml;public class Context {public static final long VERSION = System.currentTimeMillis();}");
+//			}
 			String sourcePath = context.toUri().getPath();
 			int index = sourcePath.indexOf("target/generated-sources");
 			if (index == -1) {

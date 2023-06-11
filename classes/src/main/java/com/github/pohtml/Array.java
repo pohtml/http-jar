@@ -6,7 +6,7 @@ public class Array {
 	
 	JSONArray backend = new JSONArray();
 	
-	public void array(Representation<Array> consumer) {
+	public void array(Loader<Array> consumer) {
 		Array array = new Array();
 		try {
 			consumer.load(array);
@@ -18,7 +18,7 @@ public class Array {
 		backend.put(array.backend);
 	}
 	
-	public void object(Representation<Json> consumer) {
+	public void object(Loader<Json> consumer) {
 		Json object = new Json();
 		try {
 			consumer.load(object);

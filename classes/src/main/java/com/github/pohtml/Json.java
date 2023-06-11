@@ -11,7 +11,7 @@ public class Json {
 		backend = new JSONObject();
 	}
 	
-	public void array(String key, Representation<Array> consumer) {
+	public void array(String key, Loader<Array> consumer) {
 		Array array = new Array();
 		try {
 			consumer.load(array);
@@ -33,7 +33,7 @@ public class Json {
 		}
 	}
 	
-	public void object(String key, Representation<Json> consumer) {
+	public void object(String key, Loader<Json> consumer) {
 		Json object = new Json();
 		try {
 			consumer.load(object);

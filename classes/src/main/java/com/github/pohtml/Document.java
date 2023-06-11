@@ -4,7 +4,14 @@ public class Document {
 
 	Json backend;
 	
-	public void root(Representation<Json> consumer) {
+	public Document() {
+	}
+	
+	public Document(Json backend) {
+		this.backend = backend;
+	}
+	
+	public void root(Loader<Json> consumer) {
 		if (backend != null) {
 			throw new IllegalStateException();
 		}

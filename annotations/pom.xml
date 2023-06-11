@@ -1,16 +1,21 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-    <parent>
-	    <groupId>com.github.pohtml.http-jar</groupId>
-	    <artifactId>http-jar</artifactId>
-	    <version>0.0.1-SNAPSHOT</version>
-    </parent>
-    <artifactId>annotations</artifactId>
+	<parent>
+		<groupId>com.github.pohtml.http-jar</groupId>
+		<artifactId>http-jar</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+	</parent>
+	<artifactId>annotations</artifactId>
 	<properties>
 		<maven-compiler-plugin.version>3.5.1</maven-compiler-plugin.version>
 	</properties>
+	<dependencies>
+		<dependency>
+			<groupId>org.apache.velocity</groupId>
+			<artifactId>velocity</artifactId>
+			<version>1.7</version>
+		</dependency>
+	</dependencies>
 	<build>
 		<plugins>
 			<plugin>
