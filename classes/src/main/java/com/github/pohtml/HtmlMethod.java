@@ -50,7 +50,7 @@ public abstract class HtmlMethod<T extends Get2> extends HttpServlet implements 
 				}
 				uri = uris[1];
 			}
-			if (uri.endsWith(".html")) {
+			if (request.getRequestURI().endsWith(".html")) {
 				html(uri, request, response);
 			} else {
 				servlet(context, uri, request, response);
