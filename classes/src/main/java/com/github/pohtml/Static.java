@@ -16,8 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 
 public abstract class Static extends HttpServlet {
 
-	public static final String ORIGIN = System.getProperty("com.github.pohtml.base");
-	public static final String QUALIFIER = getQualifier();
+	public static final String ORIGIN = System.getProperty("com.github.pohtml.origin");
 	public static final String CONTEXT = getContext();
 	public static final Set<String> REQUEST_HEADERS = getRequestHeaders();
 	public static final Set<String> RESPONSE_HEADERS = getResponseHeaders();
@@ -58,11 +57,6 @@ public abstract class Static extends HttpServlet {
 		headers.add("Content-Length".toLowerCase());
 		headers.add("Accept-Ranges".toLowerCase());
 		return Collections.unmodifiableSet(headers);
-	}
-	
-	private static String getQualifier() {
-		String property = System.getProperty("com.github.pohtml.qualifier");
-		return property == null? "pohtml": property;
 	}
 	
 	private static String getContext() {

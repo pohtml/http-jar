@@ -35,7 +35,7 @@ public abstract class HtmlMethod<T extends Get2> extends HttpServlet implements 
 			String uri;
 			ServletContext context = getServletContext();
 			if (Static.ORIGIN == null) {
-				if (Static.CONTEXT == null) {
+				if (Static.CONTEXT.isEmpty()) {
 					if (uris.length > 1) {
 						throw new IllegalStateException("Unexpected URI for cross server/context redirection");
 					}
@@ -63,7 +63,7 @@ public abstract class HtmlMethod<T extends Get2> extends HttpServlet implements 
 	}
 	
 	void html(String uri, HttpServletRequest req, HttpServletResponse resp) throws Exception {
-		URL url = new URL(Static.ORIGIN + uri);
+		URL url = new URL(Static.ORIGIN + Static.CONTEXT + uri);
 		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 		Enumeration<String> headerNames = req.getHeaderNames();
 		while (headerNames.hasMoreElements()) {
