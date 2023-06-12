@@ -6,15 +6,11 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
-import javax.servlet.ServletConfig;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -34,12 +30,13 @@ public abstract class HtmlMethod<T extends Get2> extends HttpServlet implements 
 
 	final void doIt(HttpServletRequest request, HttpServletResponse response) {
 		try {
+			String uri = request.getRequestURI();
 			WebServlet annotation = getClass().getAnnotation(WebServlet.class);
-			String uri = annotation.value()[1];
+			String context = annotation.value()[1];
 			if (uri.endsWith(".html")) {
-				doView(uri, request, response);
+				doView(context, request, response);
 			} else {
-				doModel(uri, request, response);
+				doModel(context, request, response);
 			}
 		} catch (RuntimeException e) {
 			throw e;
@@ -48,62 +45,8 @@ public abstract class HtmlMethod<T extends Get2> extends HttpServlet implements 
 		}
 	}
 	
-	private String getPropertyAsString(ServletConfig config, String key, String defaultValue) {
-		String value = config.getInitParameter(key);
-		if (value == null) {
-			value = getServletContext().getInitParameter(key);
-			if (value == null) {
-				value = System.getProperty(key);
-				if (value == null && defaultValue == null) {
-					throw new IllegalStateException("Missing system/context/servlet configuration property: " + key);
-				} else if (value == null && defaultValue != null) {
-					return defaultValue;
-				}
-			}
-		}
-		return value;
-	}
-
-	
-	private Set<String> getPropertyAsSet(String key, String... defaultSet) {
-		String value = System.getProperty(key);
-		if (value == null) {
-			value = getServletContext().getInitParameter(key);
-			if (value == null) {
-				value = getServletConfig().getInitParameter(key);
-				if (value == null && defaultSet == null) {
-					throw new IllegalStateException("Missing system/context/servlet configuration property: " + key);
-				} else if (value == null && defaultSet != null) {
-					return headers(defaultSet);
-				}
-			}
-		}
-		return headers(key);
-	}
-	
-	private Set<String> headers(String property) {
-		return headers(property.split("\\s*,\\s*"));
-	}
-	
-	private Set<String> headers(String... elements) {
-		return headers(Arrays.asList(elements));
-	}
-	
-	private Set<String> headers(Collection<String> elements) {
-		return elements.stream().map(String::toLowerCase).collect(Collectors.toSet());
-	}
-	
 	void doView(String uri, HttpServletRequest req, HttpServletResponse resp) throws Exception {
-		int index = uri.lastIndexOf('.');
-		String extension = null;
-		if (index != -1) {
-			extension = uri.substring(index);
-		}
-		if (extension != null && !extension.equals("html")) {
-			uri = uri.substring(0, index + 1) + "html";
-		}
-		index = getServletContext().getContextPath().length();
-		URL url = new URL(AbstractStaticContext.BASE + uri.substring(index));
+		URL url = new URL(AbstractStaticContext.BASE + uri);
 		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 		Enumeration<String> headerNames = req.getHeaderNames();
 		while (headerNames.hasMoreElements()) {
@@ -139,10 +82,10 @@ public abstract class HtmlMethod<T extends Get2> extends HttpServlet implements 
 			byte[] buffer = new byte[1024];
 			buffer[0] = (byte) read;
 			read = reader.read(buffer, 1, buffer.length - 1) + 1;
-			if (responseCode == 200 && uri.endsWith(".html")) {
+			if (responseCode == 200) {
 				String start = new String(Arrays.copyOfRange(buffer, 0, 256));
 				String head = "<head>";
-				index = start.indexOf(head);
+				int index = start.indexOf(head);
 				if (index == -1) {
 					index = start.indexOf("<HEAD>");
 				}

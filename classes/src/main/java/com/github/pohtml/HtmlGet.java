@@ -32,9 +32,7 @@ public abstract class HtmlGet<T extends Get2> extends HtmlMethod<T> {
 		cookie.setMaxAge(-1);
 		response.addCookie(cookie);
 		ServletContext context = getServletContext();
-		String path = context.getContextPath();
-		uri = uri.substring(path.length());
-		RequestDispatcher dispatcher = context.getRequestDispatcher(uri + ".html");
+		RequestDispatcher dispatcher = context.getRequestDispatcher(uri);
 		dispatcher.forward(request, response);	
 	}
 	
