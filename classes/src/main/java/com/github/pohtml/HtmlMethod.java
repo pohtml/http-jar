@@ -15,6 +15,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import javax.servlet.ServletConfig;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -33,7 +34,8 @@ public abstract class HtmlMethod<T extends Get2> extends HttpServlet implements 
 
 	final void doIt(HttpServletRequest request, HttpServletResponse response) {
 		try {
-			String uri = request.getRequestURI();
+			WebServlet annotation = getClass().getAnnotation(WebServlet.class);
+			String uri = annotation.value()[1];
 			if (uri.endsWith(".html")) {
 				doView(uri, request, response);
 			} else {
