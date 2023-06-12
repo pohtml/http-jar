@@ -5,10 +5,8 @@ import static javax.tools.Diagnostic.Kind.ERROR;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 
 import javax.annotation.processing.AbstractProcessor;
@@ -25,10 +23,6 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.JavaFileObject;
-
-import org.apache.velocity.Template;
-import org.apache.velocity.VelocityContext;
-import org.apache.velocity.app.VelocityEngine;
 
 @SupportedAnnotationTypes("com.softalks.pohtml.annotations.Resource")
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
@@ -71,22 +65,26 @@ public class AnnotationProcessor extends AbstractProcessor {
 		if (servlet.contains("*")) {
 			messager.printMessage(ERROR, "URI patterns not allowed. You must uniquely identify the annotated resource",
 					element);
-		}
-		String packageName = elements.getPackageOf(element).getQualifiedName().toString();
-		String className = "PlainOldHtml" + element.getSimpleName().toString();
-		String name = packageName + '.' + className;
-		JavaFileObject builderFile = filer.createSourceFile(name, element);
-		StringBuilder out = new StringBuilder();
-		try (PrintWriter pw = new PrintWriter(builderFile.openWriter())) {
-			out.append(PACKAGE).append(packageName);
-			out.append(WEB_SERVLET).append(servlet).append("\", \"").append(servlet + ".html");
-			out.append(CLASS).append(className);
-			out.append(EXTENDS).append(method);
-			out.append(VERSION).append("com.github.pohtml.Context.VERSION");
-			out.append(METHOD_DECLARATION).append(method);
-			out.append(METHOD_CODE).append(element.getSimpleName());
-			out.append(END);
-			pw.append(out.toString());
+		} else if (servlet.endsWith(".html")) {
+			messager.printMessage(ERROR, "The URI of a dynamic resource cannot have the .html extension",
+					element);
+		} else {
+			String packageName = elements.getPackageOf(element).getQualifiedName().toString();
+			String className = "PlainOldHtml" + element.getSimpleName().toString();
+			String name = packageName + '.' + className;
+			JavaFileObject builderFile = filer.createSourceFile(name, element);
+			StringBuilder out = new StringBuilder();
+			try (PrintWriter pw = new PrintWriter(builderFile.openWriter())) {
+				out.append(PACKAGE).append(packageName);
+				out.append(WEB_SERVLET).append(servlet).append("\", \"").append(servlet + ".html");
+				out.append(CLASS).append(className);
+				out.append(EXTENDS).append(method);
+				out.append(VERSION).append("com.github.pohtml.Context.VERSION");
+				out.append(METHOD_DECLARATION).append(method);
+				out.append(METHOD_CODE).append(element.getSimpleName());
+				out.append(END);
+				pw.append(out.toString());
+			}	
 		}
 	}
 
@@ -95,14 +93,6 @@ public class AnnotationProcessor extends AbstractProcessor {
 			JavaFileObject context = filer.createSourceFile("com.github.pohtml.Context");
 			StringBuilder out = new StringBuilder();
 			long now = System.currentTimeMillis();
-            Properties props = new Properties();
-            URL url = this.getClass().getClassLoader().getResource("velocity.properties");
-            props.load(url.openStream());
-            VelocityEngine ve = new VelocityEngine(props);
-            ve.init();
-            VelocityContext vc = new VelocityContext();
-            Template vt = ve.getTemplate("beaninfo.vm");
-            vt.merge(vc, context.openWriter());
 //			try (PrintWriter pw = new PrintWriter(context.openWriter())) {
 //				out.append(PACKAGE).append("com.github.pohtml");
 //				out.append(WEB_SERVLET).append(String.valueOf(now)).append("\"");

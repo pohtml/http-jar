@@ -11,6 +11,5 @@ public abstract class Get2 extends Invocation2 {
 	protected final HttpServletRequest getRequest() {
 		return request;
 	}
-	
-	
+		
 }

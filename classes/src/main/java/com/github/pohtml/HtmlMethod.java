@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.function.Supplier;
 
+import javax.servlet.ServletContext;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -26,17 +27,33 @@ public abstract class HtmlMethod<T extends Get2> extends HttpServlet implements 
 		this.lastModified = lastModified;
 	}
 
-	protected abstract void doModel(String uri, HttpServletRequest request, HttpServletResponse response) throws Exception;
+	protected abstract void servlet(ServletContext context,String uri, HttpServletRequest request, HttpServletResponse response) throws Exception;
 
 	final void doIt(HttpServletRequest request, HttpServletResponse response) {
 		try {
-			String uri = request.getRequestURI();
-			WebServlet annotation = getClass().getAnnotation(WebServlet.class);
-			String context = annotation.value()[1];
-			if (uri.endsWith(".html")) {
-				doView(context, request, response);
+			String[] uris = getClass().getAnnotation(WebServlet.class).value();
+			String uri;
+			ServletContext context = getServletContext();
+			if (Static.ORIGIN == null) {
+				if (Static.CONTEXT == null) {
+					if (uris.length > 1) {
+						throw new IllegalStateException("Unexpected URI for cross server/context redirection");
+					}
+					uri = uris[0] + ".html";
+				} else {
+					uri = uris.length < 2? uris[0] + ".html" : uris[1];
+					context = context.getContext(Static.CONTEXT);
+				}
 			} else {
-				doModel(context, request, response);
+				if (uris.length < 2) {
+					throw new IllegalStateException("Missing URI for static files server redirection");
+				}
+				uri = uris[1];
+			}
+			if (uri.endsWith(".html")) {
+				html(uri, request, response);
+			} else {
+				servlet(context, uri, request, response);
 			}
 		} catch (RuntimeException e) {
 			throw e;
@@ -45,13 +62,13 @@ public abstract class HtmlMethod<T extends Get2> extends HttpServlet implements 
 		}
 	}
 	
-	void doView(String uri, HttpServletRequest req, HttpServletResponse resp) throws Exception {
-		URL url = new URL(AbstractStaticContext.BASE + uri);
+	void html(String uri, HttpServletRequest req, HttpServletResponse resp) throws Exception {
+		URL url = new URL(Static.ORIGIN + uri);
 		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 		Enumeration<String> headerNames = req.getHeaderNames();
 		while (headerNames.hasMoreElements()) {
 			String headerName = headerNames.nextElement();
-			if (!AbstractStaticContext.REQUEST_HEADERS.contains(headerName.toLowerCase())) {
+			if (!Static.REQUEST_HEADERS.contains(headerName.toLowerCase())) {
 				continue;
 			}
 			Enumeration<String> headerValues = req.getHeaders(headerName);
@@ -67,7 +84,7 @@ public abstract class HtmlMethod<T extends Get2> extends HttpServlet implements 
 		}
 		for (Entry<String, List<String>> entry : connection.getHeaderFields().entrySet()) {
 			String key = entry.getKey();
-			if (key == null || !AbstractStaticContext.RESPONSE_HEADERS.contains(key.toLowerCase())) {
+			if (key == null || !Static.RESPONSE_HEADERS.contains(key.toLowerCase())) {
 				continue;
 			}
 			for (String value : entry.getValue()) {
@@ -108,22 +125,6 @@ public abstract class HtmlMethod<T extends Get2> extends HttpServlet implements 
 			}
 		}
 
-	}
-	
-	@Override
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) {
-		try {
-			String uri = request.getRequestURI();
-			if (uri.endsWith(".html")) {
-				doView(uri, request, response);
-			} else {
-				doModel(uri, request, response);
-			}
-		} catch (RuntimeException e) {
-			throw e;
-		} catch (Exception e) {
-			throw new IllegalStateException(e);
-		}
 	}
 
 	private InputStream getInputStream(HttpURLConnection connection) {
