@@ -73,7 +73,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 			messager.printMessage(ERROR, message, element);
 		} else {
 			String view = annotation.view();
-			String version = "1L";
+			String version = "1";
 			if (!view.isEmpty()) {
 				if (!view.isEmpty() && !view.endsWith(".html")) {
 					view = view + model + ".html";
@@ -85,6 +85,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 					}
 				}
 			}
+			version += 'L';
 			String simpleName = element.getSimpleName().toString();
 			String packageName = elements.getPackageOf(element).getQualifiedName().toString();
 			String className = method + "Servlet" + simpleName;
