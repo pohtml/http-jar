@@ -16,7 +16,7 @@ public class TemporaryFiles {
         	String name = zip.getName();
         	int index = name.lastIndexOf('.');
         	name = name.substring(0, index);
-			directory = new File(zip.getParentFile(), name);
+			directory = new File(zip.getParentFile(), '.' + name);
 			directory.mkdir();
 	        byte[] buffer = new byte[1024];
 	        try (ZipInputStream zis = new ZipInputStream(new FileInputStream(zip))) {

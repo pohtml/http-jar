@@ -39,7 +39,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 	private static final String WEB_SERVLET = "; @javax.servlet.annotation.WebServlet({\"";
 	private static final String CLASS = "\"}) public class ";
 	private static final String EXTENDS = " extends com.github.pohtml.";
-	private static final String VERSION = "let {private static final long serialVersionUID = ";
+	private static final String VERSION = "{private static final long serialVersionUID = ";
 	private static final String CONSTRUCTOR = ";public GetServletForm() {super(serialVersionUID);}";
 	private static final String METHOD_DECLARATION = "@Override public ";
 	private static final String METHOD_CODE = " get() {return new ";
@@ -76,11 +76,13 @@ public class AnnotationProcessor extends AbstractProcessor {
 			String version = "1L";
 			if (!view.isEmpty()) {
 				if (!view.isEmpty() && !view.endsWith(".html")) {
-					view = view + model;
+					view = view + model + ".html";
 				}
 				if (temporaryFiles != null) {
 					File temporary = new File(temporaryFiles.directory, view.substring(1));
-					version = String.valueOf(temporary.lastModified());
+					if (temporary.exists()) {
+						version = String.valueOf(temporary.lastModified());	
+					}
 				}
 			}
 			String simpleName = element.getSimpleName().toString();
