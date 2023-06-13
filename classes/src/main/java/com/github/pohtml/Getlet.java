@@ -3,7 +3,7 @@ package com.github.pohtml;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-public abstract class Getlet extends Method<Getlet, Get> {
+public abstract class Getlet extends DeprecatedMethod<Getlet, DeprecatedGet> {
 
 	private static final long serialVersionUID = 1L;
 
@@ -17,6 +17,6 @@ public abstract class Getlet extends Method<Getlet, Get> {
 	}
  	
  	@Override
- 	public abstract Get call() throws Exception;
+ 	public abstract DeprecatedGet call() throws Exception;
 	
 }

@@ -1,8 +1,6 @@
 package com.github.pohtml;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -20,6 +18,12 @@ public abstract class Static extends HttpServlet {
 	public static final String CONTEXT = getContext();
 	public static final Set<String> REQUEST_HEADERS = getRequestHeaders();
 	public static final Set<String> RESPONSE_HEADERS = getResponseHeaders();
+
+	private final String build;
+	
+	protected Static(String build) {
+		this.build = build;
+	}
 	
 	private static final long serialVersionUID = 1L;
 	
@@ -66,18 +70,8 @@ public abstract class Static extends HttpServlet {
 	
 	@Override
 	protected final void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		resp.addHeader("Cache-Control", "max-age=31536000");
-		resp.setContentType("application/javascript; charset=utf-8");
-		String path = "/com/github/pohtml/common.js";
-		ClassLoader resources = getClass().getClassLoader(); 
-		try (InputStream is = resources.getResourceAsStream(path); OutputStream os = resp.getOutputStream()) {
-			byte[] buffer = new byte[445];
-			int read = is.read(buffer);
-			while (read != -1) {
-				os.write(buffer, 0, read);
-				read = is.read(buffer);
-			}
-		}
+		resp.setContentType("text/plain");
+		resp.getWriter().write(build);
 	}
 
 }

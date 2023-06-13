@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.SOURCE)
-public @interface Resource {
+public @interface DynamicHtml {
 	String servlet() default "";
 
 	/**
@@ -23,12 +23,12 @@ public @interface Resource {
 	 * relative to the specified context in the static files server base URI</li>
 	 * </ul>
 	 */
-	String context() default "";
+	String view() default "";
 
 	/**
 	 * The context relative URI of this resource. Wild cards not allowed
 	 */
-	String uri() default "";
+	String model() default "";
 
 	/**
 	 * It will be interpreted as the context relative URI of this resource if the

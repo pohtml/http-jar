@@ -7,7 +7,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-public abstract class Invocation<M extends Method<M, I>, I extends Invocation<M, I>> {
+public abstract class DeprecatedInvocation<M extends DeprecatedMethod<M, I>, I extends DeprecatedInvocation<M, I>> {
 	
 	HttpServletRequest request;
 	HttpServletResponse response;

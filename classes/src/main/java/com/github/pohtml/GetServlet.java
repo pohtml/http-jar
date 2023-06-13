@@ -10,7 +10,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-public abstract class GetServlet<T extends Get2> extends HtmlMethod<T> {
+public abstract class GetServlet<T extends Get> extends HtmlMethod<T> {
 	
 	private static final long serialVersionUID = 1L;
 

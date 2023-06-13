@@ -7,7 +7,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-public abstract class Postlet extends Method<Postlet, Post> {
+public abstract class Postlet extends DeprecatedMethod<Postlet, Post> {
 
 	public Postlet() {
 		super("post");

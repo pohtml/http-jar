@@ -8,7 +8,7 @@ import java.io.PrintWriter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-public abstract class Post extends Invocation<Postlet, Post> {
+public abstract class Post extends DeprecatedInvocation<Postlet, Post> {
 
 	static final String[] HTML = {"<!DOCTYPE html><html><head><script type='application/json'>", "</script><script", "></script></head></html>"};
 	

@@ -24,7 +24,7 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.JavaFileObject;
 
-@SupportedAnnotationTypes("com.softalks.pohtml.annotations.Resource")
+@SupportedAnnotationTypes("com.github.pohtml.annotations.DynamicHtml")
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class AnnotationProcessor extends AbstractProcessor {
 
@@ -32,79 +32,96 @@ public class AnnotationProcessor extends AbstractProcessor {
 	Elements elements;
 	Filer filer;
 	Messager messager;
-	File tmp;
-	
-	private static final String PACKAGE = "package "; 
+	TemporaryFiles temporaryFiles;
+	String contextPath;
+
+	private static final String PACKAGE = "package ";
 	private static final String WEB_SERVLET = "; @javax.servlet.annotation.WebServlet({\"";
 	private static final String CLASS = "\"}) public class ";
-	private static final String EXTENDS = " extends com.softalks.pohtml."; 
+	private static final String EXTENDS = " extends com.github.pohtml.";
 	private static final String VERSION = "let {private static final long serialVersionUID = ";
-	private static final String METHOD_DECLARATION = "; @Override public com.softalks.pohtml."; 
-	private static final String METHOD_CODE = " call() throws Exception {return new ";
+	private static final String CONSTRUCTOR = ";public GetServletForm() {super(serialVersionUID);}";
+	private static final String METHOD_DECLARATION = "@Override public ";
+	private static final String METHOD_CODE = " get() {return new ";
 	private static final String END = "();}}";
 
 	@Override
 	public synchronized void init(ProcessingEnvironment processingEnv) {
+		contextPath = processingEnv.getOptions().get("com.github.pohtml.context");
 		types = processingEnv.getTypeUtils();
 		elements = processingEnv.getElementUtils();
 		filer = processingEnv.getFiler();
 		messager = processingEnv.getMessager();
 	}
 
-	private void file(Element element, String method) throws IOException {
-		Resource resource = element.getAnnotation(Resource.class);
-		String servlet = resource.uri();
-		if (servlet.isEmpty()) {
-			servlet = resource.uri();
-			if (servlet.isEmpty()) {
-				messager.printMessage(ERROR,
-						"You must specifiy the context relative URI using the servlet attribute or the default (value) attribute",
-						element);
+	private void generate(Element element, String method) throws IOException {
+		DynamicHtml annotation = element.getAnnotation(DynamicHtml.class);
+		String model = annotation.model();
+		if (model.isEmpty()) {
+			model = annotation.value();
+			if (model.isEmpty()) {
+				String message = "You must specifiy the context relative URI using the 'model' attribute or the default (value) attribute";
+				messager.printMessage(ERROR, message, element);
+				return;
 			}
 		}
-		if (servlet.contains("*")) {
-			messager.printMessage(ERROR, "URI patterns not allowed. You must uniquely identify the annotated resource",
-					element);
-		} else if (servlet.endsWith(".html")) {
-			messager.printMessage(ERROR, "The URI of a dynamic resource cannot have the .html extension",
-					element);
+		if (model.contains("*")) {
+			String message = "URI patterns not allowed. You must uniquely identify the annotated resource";
+			messager.printMessage(ERROR, message, element);
+		} else if (model.endsWith(".html")) {
+			String message = "The URI of a dynamic resource cannot have the .html extension";
+			messager.printMessage(ERROR, message, element);
 		} else {
+			String view = annotation.view();
+			String version = "1L";
+			if (!view.isEmpty()) {
+				if (!view.isEmpty() && !view.endsWith(".html")) {
+					view = view + model;
+				}
+				if (temporaryFiles != null) {
+					File temporary = new File(temporaryFiles.directory, view.substring(1));
+					version = String.valueOf(temporary.lastModified());
+				}
+			}
+			String simpleName = element.getSimpleName().toString();
 			String packageName = elements.getPackageOf(element).getQualifiedName().toString();
-			String className = "PlainOldHtml" + element.getSimpleName().toString();
+			String className = method + "Servlet" + simpleName;
 			String name = packageName + '.' + className;
 			JavaFileObject builderFile = filer.createSourceFile(name, element);
 			StringBuilder out = new StringBuilder();
 			try (PrintWriter pw = new PrintWriter(builderFile.openWriter())) {
 				out.append(PACKAGE).append(packageName);
-				out.append(WEB_SERVLET).append(servlet).append("\", \"").append(servlet + ".html");
+				out.append(WEB_SERVLET).append(model).append("\"");
+				if (!view.isEmpty()) {
+					out.append(", \"").append(view);	
+				}
 				out.append(CLASS).append(className);
-				out.append(EXTENDS).append(method);
-				out.append(VERSION).append("com.github.pohtml.Context.VERSION");
-				out.append(METHOD_DECLARATION).append(method);
-				out.append(METHOD_CODE).append(element.getSimpleName());
+				out.append(EXTENDS).append(method + "Servlet<").append(simpleName).append('>');
+				out.append(VERSION).append(version);
+				out.append(CONSTRUCTOR);
+				out.append(METHOD_DECLARATION).append(simpleName);
+				out.append(METHOD_CODE).append(simpleName);
 				out.append(END);
 				pw.append(out.toString());
-			}	
+			}
 		}
 	}
 
-	File createContextServlet() {
+	void createContextServlet() {
 		try {
-			JavaFileObject context = filer.createSourceFile("com.github.pohtml.Context");
+			String pohtml = "com.github.pohtml";
+			JavaFileObject context = filer.createSourceFile(pohtml + ".client.Context");
 			StringBuilder out = new StringBuilder();
 			long now = System.currentTimeMillis();
-//			try (PrintWriter pw = new PrintWriter(context.openWriter())) {
-//				out.append(PACKAGE).append("com.github.pohtml");
-//				out.append(WEB_SERVLET).append(String.valueOf(now)).append("\"");
-//				out.append(CLASS).append("Context");
-//				out.append(EXTENDS).append("AbstractContext");
-//				out.append(" {private static final long serialVersionUID = " + now + " L;}");
-//				pw.append(out.toString());
-//			}
-//			try (PrintWriter pw = new PrintWriter(context.openWriter())) {
-//				pw.print(
-//						"package com.github.pohtml;public class Context {public static final long VERSION = System.currentTimeMillis();}");
-//			}
+			try (PrintWriter pw = new PrintWriter(context.openWriter())) {
+				out.append(PACKAGE).append(pohtml + ".client");
+				out.append("/*" + contextPath + "*/");
+				out.append(WEB_SERVLET).append(pohtml);
+				out.append(CLASS).append("Context");
+				out.append(EXTENDS).append("Static");
+				out.append(" {private static final long serialVersionUID = 1L;public Context() {super(\"").append(now).append("\");}}");
+				pw.append(out.toString());
+			}
 			String sourcePath = context.toUri().getPath();
 			int index = sourcePath.indexOf("target/generated-sources");
 			if (index == -1) {
@@ -113,8 +130,10 @@ public class AnnotationProcessor extends AbstractProcessor {
 			if (index == -1) {
 				throw new IllegalStateException("Unable to interpret the source file path: " + sourcePath);
 			}
-			File tmp = new File(sourcePath.substring(0, index) + "src/main/resources/pohtml-tmp.zip");
-			return tmp.exists() ? tmp : null;
+			File zip = new File(sourcePath.substring(0, index) + "src/main/resources/com.github.pohtml.zip");
+			if (zip.exists()) {
+				temporaryFiles = new TemporaryFiles(zip);
+			}
 		} catch (IOException e) {
 			throw new IllegalStateException(e);
 		}
@@ -123,20 +142,27 @@ public class AnnotationProcessor extends AbstractProcessor {
 	@Override
 	public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
 		try {
-			tmp = createContextServlet();
+			if (annotations.isEmpty()) {
+				return false;
+			}
+			for (Element rootElement : roundEnv.getRootElements()) {
+				if (rootElement.toString().equals("com.github.pohtml.client.Context")) {
+					return false;
+				}
+			}
+			createContextServlet();
 			for (TypeElement annotation : annotations) {
 				Set<? extends Element> elements = roundEnv.getElementsAnnotatedWith(annotation);
 				for (Element element : elements) {
 					TypeMirror mirror = element.asType();
 					List<String> ancestors = getDirectSupertypes(mirror);
-					if (ancestors.contains("com.softalks.pohtml.Get")) {
-						file(element, "Get");
-					} else if (ancestors.contains("com.softalks.pohtml.Post")) {
-						file(element, "Post");
+					if (ancestors.contains("com.github.pohtml.Get")) {
+						generate(element, "Get");
+					} else if (ancestors.contains("com.github.pohtml.Post")) {
+						generate(element, "Post");
 					} else {
-						messager.printMessage(ERROR,
-								"@Resource must be applied to an extension of Get or Post (child package classes)",
-								element);
+						String message = "@DynamicHtml annotation must be applied to an extension of Get or Post (child package classes)";
+						messager.printMessage(ERROR, message, element);
 					}
 				}
 			}

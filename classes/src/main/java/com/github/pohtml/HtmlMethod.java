@@ -17,7 +17,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-public abstract class HtmlMethod<T extends Get2> extends HttpServlet implements Supplier<T> {
+public abstract class HtmlMethod<T extends Get> extends HttpServlet implements Supplier<T> {
 	
 	private static final long serialVersionUID = 1L;
 
