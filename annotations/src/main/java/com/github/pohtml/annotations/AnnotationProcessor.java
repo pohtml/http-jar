@@ -18,13 +18,14 @@ import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.JavaFileObject;
 
-@SupportedAnnotationTypes("com.github.pohtml.annotations.DynamicHtml")
+@SupportedAnnotationTypes({"com.github.pohtml.annotations.DynamicHtml", "com.github.pohtml.annotations.Get"})
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class AnnotationProcessor extends AbstractProcessor {
 
@@ -155,18 +156,31 @@ public class AnnotationProcessor extends AbstractProcessor {
 			}
 			createContextServlet();
 			for (TypeElement annotation : annotations) {
-				Set<? extends Element> elements = roundEnv.getElementsAnnotatedWith(annotation);
-				for (Element element : elements) {
-					TypeMirror mirror = element.asType();
-					List<String> ancestors = getDirectSupertypes(mirror);
-					if (ancestors.contains("com.github.pohtml.Get")) {
-						generate(element, "Get");
-					} else if (ancestors.contains("com.github.pohtml.Post")) {
-						generate(element, "Post");
-					} else {
-						String message = "@DynamicHtml annotation must be applied to an extension of Get or Post (child package classes)";
-						messager.printMessage(ERROR, message, element);
+				Set<? extends Element> types = roundEnv.getElementsAnnotatedWith(annotation);
+				String name = annotation.getSimpleName().toString(); 
+				if (name.equals("Get")) {
+					for (Element type : types) {
+						for (Element enclosed : ((TypeElement)type).getEnclosedElements()) {
+							if (enclosed instanceof ExecutableElement) {
+								ExecutableElement method = (ExecutableElement)enclosed;
+								System.out.println(method.getSimpleName());
+								System.out.println(method.getReturnType());
+							}
+						}
 					}
+				} else if (name.equals("DynamicHtml")) {
+					for (Element element : types) {
+						TypeMirror mirror = element.asType();
+						List<String> ancestors = getDirectSupertypes(mirror);
+						if (ancestors.contains("com.github.pohtml.Get")) {
+							generate(element, "Get");
+						} else if (ancestors.contains("com.github.pohtml.Post")) {
+							generate(element, "Post");
+						} else {
+							String message = "@DynamicHtml annotation must be applied to an extension of Get or Post (child package classes)";
+							messager.printMessage(ERROR, message, element);
+						}
+					}	
 				}
 			}
 		} catch (RuntimeException e) {
