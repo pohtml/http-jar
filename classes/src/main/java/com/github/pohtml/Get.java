@@ -2,6 +2,8 @@ package com.github.pohtml;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.github.pohtml.json.Json;
+
 public abstract class Get extends Method {
 
 	HttpServletRequest request;

@@ -8,6 +8,8 @@ import java.io.PrintWriter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.github.pohtml.json.Json;
+
 public abstract class Post extends DeprecatedInvocation<Postlet, Post> {
 
 	static final String[] HTML = {"<!DOCTYPE html><html><head><script type='application/json'>", "</script><script", "></script></head></html>"};

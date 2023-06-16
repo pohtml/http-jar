@@ -1,4 +1,4 @@
-package com.github.pohtml;
+package com.github.pohtml.apt;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -12,17 +12,18 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-public abstract class Static extends HttpServlet {
+public abstract class PohtmlContext extends HttpServlet {
 
-	public static final String ORIGIN = System.getProperty("com.github.pohtml.origin");
+	private static final String DOMAIN = "com.github.pohtml.";
+	public static final String ORIGIN = System.getProperty(DOMAIN + "origin");
 	public static final String CONTEXT = getContext();
 	public static final Set<String> REQUEST_HEADERS = getRequestHeaders();
 	public static final Set<String> RESPONSE_HEADERS = getResponseHeaders();
 
-	private final String build;
+	private final String buildTimestamp;
 	
-	protected Static(String build) {
-		this.build = build;
+	protected PohtmlContext(String build) {
+		this.buildTimestamp = build;
 	}
 	
 	private static final long serialVersionUID = 1L;
@@ -64,14 +65,14 @@ public abstract class Static extends HttpServlet {
 	}
 	
 	private static String getContext() {
-		String property = System.getProperty("com.github.pohtml.context");
-		return property == null? "": property;
+		String property = System.getProperty(DOMAIN + "context");
+		return property == null? "" : property;
 	}
 	
 	@Override
 	protected final void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		resp.setContentType("text/plain");
-		resp.getWriter().write(build);
+		resp.getWriter().write(buildTimestamp);
 	}
 
 }

@@ -17,6 +17,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.github.pohtml.apt.PohtmlContext;
+
 public abstract class HtmlMethod<T extends Get> extends HttpServlet implements Supplier<T> {
 	
 	private static final long serialVersionUID = 1L;
@@ -34,15 +36,15 @@ public abstract class HtmlMethod<T extends Get> extends HttpServlet implements S
 			String[] uris = getClass().getAnnotation(WebServlet.class).value();
 			String uri;
 			ServletContext context = getServletContext();
-			if (Static.ORIGIN == null) {
-				if (Static.CONTEXT.isEmpty()) {
+			if (PohtmlContext.ORIGIN == null) {
+				if (PohtmlContext.CONTEXT.isEmpty()) {
 					if (uris.length > 1) {
 						throw new IllegalStateException("Unexpected URI for cross server/context redirection");
 					}
 					uri = uris[0] + ".html";
 				} else {
 					uri = uris.length < 2? uris[0] + ".html" : uris[1];
-					context = context.getContext(Static.CONTEXT);
+					context = context.getContext(PohtmlContext.CONTEXT);
 				}
 			} else {
 				if (uris.length < 2) {
@@ -63,12 +65,12 @@ public abstract class HtmlMethod<T extends Get> extends HttpServlet implements S
 	}
 	
 	void html(String uri, HttpServletRequest req, HttpServletResponse resp) throws Exception {
-		URL url = new URL(Static.ORIGIN + Static.CONTEXT + uri);
+		URL url = new URL(PohtmlContext.ORIGIN + PohtmlContext.CONTEXT + uri);
 		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 		Enumeration<String> headerNames = req.getHeaderNames();
 		while (headerNames.hasMoreElements()) {
 			String headerName = headerNames.nextElement();
-			if (!Static.REQUEST_HEADERS.contains(headerName.toLowerCase())) {
+			if (!PohtmlContext.REQUEST_HEADERS.contains(headerName.toLowerCase())) {
 				continue;
 			}
 			Enumeration<String> headerValues = req.getHeaders(headerName);
@@ -84,7 +86,7 @@ public abstract class HtmlMethod<T extends Get> extends HttpServlet implements S
 		}
 		for (Entry<String, List<String>> entry : connection.getHeaderFields().entrySet()) {
 			String key = entry.getKey();
-			if (key == null || !Static.RESPONSE_HEADERS.contains(key.toLowerCase())) {
+			if (key == null || !PohtmlContext.RESPONSE_HEADERS.contains(key.toLowerCase())) {
 				continue;
 			}
 			for (String value : entry.getValue()) {

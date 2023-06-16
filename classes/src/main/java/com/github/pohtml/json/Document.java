@@ -1,4 +1,6 @@
-package com.github.pohtml;
+package com.github.pohtml.json;
+
+import com.github.pohtml.Loader;
 
 public class Document {
 

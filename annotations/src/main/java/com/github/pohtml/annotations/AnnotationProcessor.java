@@ -122,7 +122,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 				out.append("/*" + contextPath + "*/");
 				out.append(WEB_SERVLET).append(pohtml);
 				out.append(CLASS).append("Context");
-				out.append(EXTENDS).append("Static");
+				out.append(EXTENDS).append("apt.PohtmlContext");
 				out.append(" {private static final long serialVersionUID = 1L;public Context() {super(\"").append(now).append("\");}}");
 				pw.append(out.toString());
 			}

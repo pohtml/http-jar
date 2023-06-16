@@ -9,6 +9,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.github.pohtml.json.Document;
+
 public abstract class DeprecatedMethod<M extends DeprecatedMethod<M, I>, I extends DeprecatedInvocation<M, I>> extends HttpServlet implements Callable<I> {
 
 	private final String method;

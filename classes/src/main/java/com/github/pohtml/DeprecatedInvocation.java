@@ -7,6 +7,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.github.pohtml.json.Json;
+
 public abstract class DeprecatedInvocation<M extends DeprecatedMethod<M, I>, I extends DeprecatedInvocation<M, I>> {
 	
 	HttpServletRequest request;

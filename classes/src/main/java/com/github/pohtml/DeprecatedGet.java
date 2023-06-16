@@ -9,6 +9,8 @@ import java.util.function.Consumer;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 
+import com.github.pohtml.json.Json;
+
 public abstract class DeprecatedGet extends DeprecatedInvocation<Getlet, DeprecatedGet> {
 
 	protected class View {
